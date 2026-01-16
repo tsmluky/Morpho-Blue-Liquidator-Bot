@@ -88,4 +88,4 @@ Running MEV infrastructure involves significant financial risk, including but no
 
 ---
 
-* Engineered by Lukx *
+* Engineered by Lukx
