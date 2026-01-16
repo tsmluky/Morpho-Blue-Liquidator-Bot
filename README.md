@@ -1,92 +1,91 @@
-# Morpho Blue Liquidator Bot
+# MORPHO BLUE LIQUIDATOR
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Network](https://img.shields.io/badge/network-Arbitrum_One-blue)
-![Stack](https://img.shields.io/badge/stack-Viem_|_TypeScript-gray)
+![License](https://img.shields.io/badge/license-MIT-000000?style=flat-square)
+![Network](https://img.shields.io/badge/network-Arbitrum_One-000000?style=flat-square)
+![Stack](https://img.shields.io/badge/stack-TypeScript_|_Viem-000000?style=flat-square)
 
-A high-performance, **Multicall-optimized** MEV bot designed to detect and execute liquidations on Morpho Blue markets (Arbitrum).
-Built for speed, efficiency, and competitiveness without requiring expensive infrastructure.
+## SYSTEM OVERVIEW
 
----
+A high-frequency MEV liquidation engine engineered for the Morpho Blue protocol on Arbitrum.
+This system leverages **Multicall** aggregation and **Atomic Execution** strategies to compete in high-congestion environments with minimal latency overhead.
 
-## Key Features
-
-*   **Multicall Engine:** Refactored `Scanner` and `Quoter` to aggregate 50+ RPC calls into a *single batch request*.
-    *   *Result:* Cycle time reduced from ~55s to **<10s** on free RPCs.
-*   **Gas War Strategy:**
-    *   **Dynamic Bribery:** Configurable `TX_PRIORITY_FEE_WEI` to outbid standard transactions in the mempool.
-    *   **Smart Multiplier:** `GAS_PRICE_MULTIPLIER` ensures transaction inclusion during volatility spikes.
-*   **Forensic Safety:**
-    *   **Zero-Risk Exec:** Simulates the exact liquidation transaction on-chain before broadcasting.
-    *   **Health Check:** Verifies the position's `Health Factor` immediately before execution to prevent wasting gas on "healthy" positions.
-*   **Flash Loan Powered:**
-    *   Uses **Balancer Flashloans** (0 fee) or similar executing contracts to liquidate without operational capital.
+Designed for operational efficiency, it outperforms standard liquidation bots by aggregating state-reads and utilizing aggressive gas-bidding logic.
 
 ---
 
-## Architecture
+## CORE ARCHITECTURE
 
-The bot operates in a tight loop:
-1.  **SCAN:** Fetches `MAX_MARKETS` (e.g. 300) from Morpho API.
-2.  **FILTER:** Identifies positions with `Health Factor < 1.0003` (Aggressive Threshold).
-3.  **QUOTE:** Uses **Multicall** to check Uniswap V3 execution paths for collateral swaps.
-4.  **SIMULATE:** Dry-runs the liquidation contract call via `eth_call`.
-5.  **EXECUTE:** Broadcasts the transaction with high priority fee if profitable.
+### 1. Multicall Aggregation Engine
+Traditional bots make sequential RPC calls (N+1 problem). This system refactors the entire data-fetching layer into a two-stage Multicall process:
+*   **Stage 1:** Aggregates market data, oracle prices, and user positions into a single batch.
+*   **Stage 2:** Atomically quotes swap routes via Uniswap V3 Quoter.
+
+**Impact:** Reduces cycle time from ~50s to **<10s**, enabling near-real-time block inclusion.
+
+### 2. Probabilistic Gas War Logic
+To ensure transaction inclusion during volatility events, the bot employs a dynamic gas strategy:
+*   **Priority Fee Injection:** Configurable `TX_PRIORITY_FEE_WEI` (default 5 gwei) to bypass the standard mempool queue.
+*   **Volatility Multiplier:** Automatic `1.35x` gas price scaling to prevent "Transaction Underpriced" errors during block congestion.
+
+### 3. Forensic Safety Layer
+Execution safety is paramount. Before any transaction is broadcast to the network:
+*   **State Simulation:** The exact transaction payload is simulated against the latest block state via `eth_call`.
+*   **Health Verification:** A final, atomic check of the target's `Health Factor` prevents execution on solvent positions, eliminating failed transaction costs.
+
+### 4. Zero-Capital Execution in Aave/Morpho
+The bot utilizes Flash Loans to fund operations, requiring zero persistent capital for collateral.
+*   **Source:** Balancer Vault / Aave Pool.
+*   **Mechanism:** Borrow -> Liquidate -> Swap Collateral -> Repay Loan -> Keep Profit.
 
 ---
 
-## Setup & Configuration
+## DEPLOYMENT
 
 ### Prerequisites
-- Node.js v20+
-- An Orbitrum RPC URL (Alchemy/Infura)
+*   Node.js v20 (LTS)
+*   Enterprise-grade RPC Endpoint (Alchemy/Infura/QuickNode)
 
-### Installation
-```bash
-git clone https://github.com/yourusername/morpho-liquidator.git
-cd morpho-liquidator
-pnpm install
-```
+### Configuration
+Configure the runtime environment via `.env`:
 
-### Environment (.env)
-Copy `.env.example` to `.env` and configure:
 ```ini
-# Chain
+# NETWORK CONFIGURATION
 CHAIN_ID=42161
-ARB_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/YOUR_KEY
+ARB_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/YOUR_API_KEY
 
-# Wallet (Private Key)
+# OPERATIONAL WALLET
 PRIVATE_KEY=0x...
 
-# Strategy
-MAX_MARKETS=300
-EXEC_PROX_THRESHOLD=1.0003  # Aggressive (< 1.0003 HF triggers check)
+# EXECUTION STRATEGY
+MAX_MARKETS=300                  # Market Scanning Scope
+EXEC_PROX_THRESHOLD=1.0003       # Liquidation Trigger Threshold (< 1.0003)
 
-# Gas War (Monetization)
-TX_PRIORITY_FEE_WEI=5000000000 # 5 Gwei Priority Tip
-GAS_PRICE_MULTIPLIER=1.35
+# GAS STRATEGY (MONETIZATION)
+TX_PRIORITY_FEE_WEI=5000000000   # 5 Gwei Miner Tip
+GAS_PRICE_MULTIPLIER=1.35        # 35% Buffer
 ```
 
----
+### Execution
 
-## Running the Bot
-
-**Visual Mode (Dashboard):**
+**Dashboard Mode (Visualization)**
+Launches a real-time command-line interface with rolling metrics and forensic logs.
 ```bash
 ./scripts/run_visual.ps1
 ```
-Displays a real-time dashboard with rolling logs and cycle metrics.
 
-**Headless Mode (Server/Docker):**
+**Headless Mode (Production)**
+Optimized for Docker/Systemd environments.
 ```bash
 npx tsx src/cli.ts cycle --loop
 ```
 
 ---
 
-## Disclaimer
-This software is for educational purposes. Running MEV bots involves financial risk (gas costs, smart contract bugs). Use at your own risk.
+## DISCLAIMER
+
+This codebase is provided for **educational and research purposes only**.
+Running MEV infrastructure involves significant financial risk, including but not limited to smart contract vulnerabilities, gas volatility, and execution failures. The author assumes no liability for financial losses associated with the use of this software.
 
 ---
 
-*Built by [Lukx]*
+* Engineered by Lukx *
