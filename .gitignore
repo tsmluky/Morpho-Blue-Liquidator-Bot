@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+data/*.csv
+data/*.json
+!data/.gitkeep
+*.bak_*
+logs/
+*.log
+.DS_Store
+tmp/

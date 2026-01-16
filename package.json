@@ -1,0 +1,44 @@
+{
+  "name": "morpho-blue-liquidator",
+  "version": "1.0.0",
+  "description": "High-performance Multicall MEV Liquidator for Morpho Blue on Arbitrum",
+  "private": false,
+  "type": "module",
+  "author": "Lukx",
+  "keywords": [
+    "mev",
+    "liquidation",
+    "morpho",
+    "arbitrum",
+    "flashloan",
+    "viem",
+    "multicall"
+  ],
+  "scripts": {
+    "start": "tsx src/cli.ts cycle --loop",
+    "visual": "powershell -ExecutionPolicy Bypass -File scripts/run_visual.ps1",
+    "help": "tsx src/cli.ts --help",
+    "exec": "tsx src/cli.ts exec",
+    "dev": "tsx src/cli.ts",
+    "plan": "tsx src/cli.ts plan",
+    "simulate": "tsx src/cli.ts simulate",
+    "scan": "tsx src/cli.ts scan",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "preflight": "tsx src/cli.ts preflight"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "commander": "^14.0.0",
+    "dotenv": "^17.0.0",
+    "ofetch": "^1.5.1",
+    "pino": "^10.0.0",
+    "pino-pretty": "^13.0.0",
+    "viem": "^2.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
